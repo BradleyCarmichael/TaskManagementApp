@@ -30,6 +30,7 @@ public class TaskManager<T extends Item> {
      * Merge Sort has an average and worst-case time complexity of O(n log n),
      * making it efficient for large datasets.
      */
+
     public void sortByPriority() {
         if (tasks.isEmpty()) return;
         tasks = mergeSort(tasks, Comparator.comparingInt(task -> ((Task) task).getPriority()));
@@ -39,6 +40,7 @@ public class TaskManager<T extends Item> {
      * Sorts tasks by due date using Merge Sort.
      * Merge Sort is stable and efficient for datasets that need to maintain relative order.
      */
+
     public void sortByDueDate() {
         if (tasks.isEmpty()) return;
         tasks = mergeSort(tasks, Comparator.comparing(task -> ((Task) task).getDueDate()));
@@ -51,6 +53,7 @@ public class TaskManager<T extends Item> {
      * @param comparator The comparator defining the sorting criteria.
      * @return A sorted ArrayList.
      */
+
     private ArrayList<T> mergeSort(ArrayList<T> list, Comparator<T> comparator) {
         if (list.size() <= 1) {
             return list;
