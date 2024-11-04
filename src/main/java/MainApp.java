@@ -50,7 +50,18 @@ public class MainApp extends Application {
         });
 
         // Button to delete the selected task
-        Button deleteTaskButton = getButton();
+        Button deleteTaskButton = new Button("Delete Task");
+        deleteTaskButton.setOnAction(_ -> {
+            Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
+            if (selectedTask != null) {
+                taskManager.getTasks().remove(selectedTask);
+                updateTaskList();
+                taskDescriptionArea.clear();
+                showAlert("Success", "Task deleted successfully!");
+            } else {
+                showAlert("Error", "No task selected to delete.");
+            }
+        });
 
         // Button to save tasks to file
         Button saveButton = new Button("Save Tasks");
@@ -110,22 +121,6 @@ public class MainApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Task Manager");
         primaryStage.show();
-    }
-
-    private Button getButton() {
-        Button deleteTaskButton = new Button("Delete Task");
-        deleteTaskButton.setOnAction(_ -> {
-            Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
-            if (selectedTask != null) {
-                taskManager.getTasks().remove(selectedTask);
-                updateTaskList();
-                taskDescriptionArea.clear();
-                showAlert("Success", "Task deleted successfully!");
-            } else {
-                showAlert("Error", "No task selected to delete.");
-            }
-        });
-        return deleteTaskButton;
     }
 
     private void updateTaskList() {

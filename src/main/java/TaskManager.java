@@ -2,10 +2,10 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class TaskManager {
-    private ArrayList<Task> tasks = new ArrayList<>();
+public class TaskManager<T extends Item> {
+    private ArrayList<T> tasks = new ArrayList<>();
 
-    public void addTask(Task task) {
+    public void addTask(T task) {
         tasks.add(task);
     }
 
@@ -17,21 +17,31 @@ public class TaskManager {
 
     public void loadTasksFromFile(String filename) throws IOException, ClassNotFoundException {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
-            tasks = (ArrayList<Task>) ois.readObject();
+            tasks = (ArrayList<T>) ois.readObject();
         }
     }
 
-    public ArrayList<Task> getTasks() {
+    public ArrayList<T> getTasks() {
         return tasks;
     }
 
-    // Sort tasks by priority
+    // Sort tasks by priority if they are of type Task
     public void sortByPriority() {
-        tasks.sort(Comparator.comparingInt(Task::getPriority));
+        tasks.sort((a, b) -> {
+            if (a instanceof Task && b instanceof Task) {
+                return Integer.compare(((Task) a).getPriority(), ((Task) b).getPriority());
+            }
+            return 0;
+        });
     }
 
-    // Sort tasks by due date
+    // Sort tasks by due date if they are of type Task
     public void sortByDueDate() {
-        tasks.sort(Comparator.comparing(Task::getDueDate));
+        tasks.sort((a, b) -> {
+            if (a instanceof Task && b instanceof Task) {
+                return ((Task) a).getDueDate().compareTo(((Task) b).getDueDate());
+            }
+            return 0;
+        });
     }
 }

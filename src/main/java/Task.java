@@ -1,21 +1,13 @@
-import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Task implements Serializable {
-    private final String title;
-    private final String description;
+public class Task extends Item {
     private final int priority;
     private final LocalDate dueDate;
 
     public Task(String title, String description, int priority, LocalDate dueDate) {
-        this.title = title;
-        this.description = description;
+        super(title, description);
         this.priority = priority;
         this.dueDate = dueDate;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public int getPriority() {
@@ -28,6 +20,6 @@ public class Task implements Serializable {
 
     @Override
     public String toString() {
-        return title + " - Priority: " + priority + " - Due: " + dueDate;
+        return getTitle() + " - Priority: " + priority + " - Due: " + dueDate;
     }
 }
