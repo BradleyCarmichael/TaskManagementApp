@@ -1,6 +1,6 @@
 # Task Management Software
 
-Simple task management software to organize tasks and deadlines
+A simple Task Management software to help organize tasks and deadlines
 
 <br>
 
