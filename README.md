@@ -2,6 +2,8 @@
 
 Simple task management software to organize tasks and deadlines
 
+<br>
+
 Who: Professionals, students, and teams to managing tasks or projects.
 
 What: A desktop application for organizing tasks with deadlines, priorities, and dependencies.
