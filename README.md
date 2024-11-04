@@ -17,7 +17,6 @@ How: Through a graphical user interface, users can create and organize tasks, vi
 Why: This software keeps all task information in one place, allowing users to efficiently track progress and prioritize work, and can be accessed from your computer.
 
 <br>
-<br>
 
 UML Class Diagram:
 
