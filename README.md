@@ -14,5 +14,7 @@ How: Through a graphical user interface, users can create and organize tasks, vi
 
 Why: This software keeps all task information in one place, allowing users to efficiently track progress and prioritize work, and can be accessed from your computer.
 
+*
+
 UML Class Diagram:
 ![UMLClassDiagramTaskManagementApp](https://github.com/user-attachments/assets/506e44bc-ea7f-4621-91a0-4798c4676c97)
