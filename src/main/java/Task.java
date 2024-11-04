@@ -1,6 +1,5 @@
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public class Task implements Serializable {
     private final String title;
@@ -8,7 +7,6 @@ public class Task implements Serializable {
     private final int priority;
     private final LocalDate dueDate;
 
-    // Constructor now has only four parameters
     public Task(String title, String description, int priority, LocalDate dueDate) {
         this.title = title;
         this.description = description;
@@ -16,11 +14,20 @@ public class Task implements Serializable {
         this.dueDate = dueDate;
     }
 
-    public String getDescription() { return description; }
+    public String getDescription() {
+        return description;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
 
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        return title + " (Priority: " + priority + ", Due: " + dueDate.format(formatter) + ")";
+        return title + " - Priority: " + priority + " - Due: " + dueDate;
     }
 }

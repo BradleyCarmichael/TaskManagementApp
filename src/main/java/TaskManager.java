@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class TaskManager {
     private ArrayList<Task> tasks = new ArrayList<>();
@@ -22,5 +23,15 @@ public class TaskManager {
 
     public ArrayList<Task> getTasks() {
         return tasks;
+    }
+
+    // Sort tasks by priority
+    public void sortByPriority() {
+        tasks.sort(Comparator.comparingInt(Task::getPriority));
+    }
+
+    // Sort tasks by due date
+    public void sortByDueDate() {
+        tasks.sort(Comparator.comparing(Task::getDueDate));
     }
 }
