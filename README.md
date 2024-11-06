@@ -4,17 +4,17 @@ A simple Task Management software to help organize tasks and deadlines
 
 <br>
 
-Who: Professionals, students, and teams to managing tasks or projects.
+Who: This application is for rofessionals, students, and teams to help manage tasks and/or projects.
 
-What: A desktop application for organizing tasks with deadlines, priorities, and dependencies.
+What: This is a desktop application for organizing tasks with deadlines, priorities, and dependencies, while being able to sort using multiple different sorting options.
 
-Where: Usable on personal or work computers to support personal productivity or team collaboration.
+Where: This is usable on any personal or work computers to support personal productivity or team collaboration.
 
-When: Ideal for everyday task management, project planning, and meeting deadlines.
+When: This is ideal for everyday task management, project planning, and meeting deadlines.
 
-How: Through a graphical user interface, users can create and organize tasks, view deadlines, and manage task priorities. Task data is saved to a file for easy access and retrieval.
+How: Through a graphical user interface, users can create and organize tasks, view deadlines, and manage task priorities, and the task data is saved to a file for easy access.
 
-Why: This software keeps all task information in one place, allowing users to efficiently track progress and prioritize work, and can be accessed from your computer.
+Why: This software keeps all task information in one place, allowing users to efficiently track progress and prioritize work, and can be accessed from your computer, and allows quick sending of the data in the case that you want to track your tasks on a different machine.
 
 <br>
 
