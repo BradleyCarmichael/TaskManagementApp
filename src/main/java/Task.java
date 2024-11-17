@@ -1,6 +1,12 @@
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-public class Task extends Item {
+public class Task extends Item implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final int priority;
     private final LocalDate dueDate;
 
@@ -20,6 +26,10 @@ public class Task extends Item {
 
     @Override
     public String toString() {
-        return getTitle() + " - Priority: " + priority + " - Due: " + dueDate;
+        // Format the due date as MM/dd/yyyy
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        String formattedDate = dueDate.format(formatter);
+
+        return getTitle() + " - Priority: " + priority + " - Due: " + formattedDate;
     }
 }
