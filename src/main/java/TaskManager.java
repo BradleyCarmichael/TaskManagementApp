@@ -3,27 +3,26 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-// TaskManager class for managing tasks
 public class TaskManager<T extends Task> {
     private List<T> tasks;
-    private final TaskHistoryManager<T> historyManager;  // Add history manager
+    private final TaskHistoryManager<T> historyManager;
 
     // Constructor
     public TaskManager() {
         tasks = new LinkedList<>();
-        historyManager = new TaskHistoryManager<>();  // Initialize history manager
+        historyManager = new TaskHistoryManager<>();
     }
 
     // Add a task
     public void addTask(T task) {
         tasks.add(task);
-        historyManager.addToHistory(task, "Add");  // Record the add operation
+        historyManager.addToHistory(task, "Add");
     }
 
     // Remove a task
     public void removeTask(T task) {
         tasks.remove(task);
-        historyManager.addToHistory(task, "Remove");  // Record the remove operation
+        historyManager.addToHistory(task, "Remove");
     }
 
     // Get all tasks
@@ -31,14 +30,58 @@ public class TaskManager<T extends Task> {
         return tasks;
     }
 
-    // Sort tasks by priority using Collections.sort()
+    // Sort tasks by priority using quicksort
     public void sortTasksByPriority() {
-        tasks.sort(Comparator.comparingInt(Task::getPriority));
+        quicksort(tasks, 0, tasks.size() - 1, (a, b) -> Integer.compare(a.getPriority(), b.getPriority()));
     }
 
-    // Sort tasks by due date using Collections.sort()
+    // Sort tasks by due date using quicksort
     public void sortTasksByDueDate() {
-        tasks.sort(Comparator.comparing(Task::getDueDate));
+        quicksort(tasks, 0, tasks.size() - 1, (a, b) -> a.getDueDate().compareTo(b.getDueDate()));
+    }
+
+    /**
+     * Quicksort implementation.
+     * @param list The list to sort.
+     * @param low The starting index.
+     * @param high The ending index.
+     * @param comparator A comparator for comparing two elements.
+     */
+    private void quicksort(List<T> list, int low, int high, Comparator<T> comparator) {
+        if (low < high) {
+            int pivotIndex = partition(list, low, high, comparator);
+            quicksort(list, low, pivotIndex - 1, comparator); // Sort left side
+            quicksort(list, pivotIndex + 1, high, comparator); // Sort right side
+        }
+    }
+
+    /**
+     * Partition method for quicksort.
+     * @param list The list to partition.
+     * @param low The starting index.
+     * @param high The ending index.
+     * @param comparator A comparator for comparing two elements.
+     * @return The partition index.
+     */
+    private int partition(List<T> list, int low, int high, Comparator<T> comparator) {
+        T pivot = list.get(high); // Choose the last element as pivot
+        int i = low - 1; // Index of the smaller element
+
+        for (int j = low; j < high; j++) {
+            if (comparator.compare(list.get(j), pivot) <= 0) {
+                i++;
+                // Swap elements
+                T temp = list.get(i);
+                list.set(i, list.get(j));
+                list.set(j, temp);
+            }
+        }
+        // Swap pivot into its correct position
+        T temp = list.get(i + 1);
+        list.set(i + 1, list.get(high));
+        list.set(high, temp);
+
+        return i + 1;
     }
 
     // Save tasks to file
@@ -78,5 +121,4 @@ public class TaskManager<T extends Task> {
             }
         }
     }
-
 }
