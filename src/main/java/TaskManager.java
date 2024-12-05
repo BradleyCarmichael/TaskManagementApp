@@ -1,15 +1,15 @@
 import java.io.*;
 import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskManager<T extends Task> {
-    private List<T> tasks;
+    private List<T> tasks;  // Change to ArrayList
     private final TaskHistoryManager<T> historyManager;
 
     // Constructor
     public TaskManager() {
-        tasks = new LinkedList<>();
+        tasks = new ArrayList<>();  // Change to ArrayList
         historyManager = new TaskHistoryManager<>();
     }
 
@@ -40,13 +40,7 @@ public class TaskManager<T extends Task> {
         quicksort(tasks, 0, tasks.size() - 1, (a, b) -> a.getDueDate().compareTo(b.getDueDate()));
     }
 
-    /**
-     * Quicksort implementation.
-     * @param list The list to sort.
-     * @param low The starting index.
-     * @param high The ending index.
-     * @param comparator A comparator for comparing two elements.
-     */
+    // Quicksort implementation
     private void quicksort(List<T> list, int low, int high, Comparator<T> comparator) {
         if (low < high) {
             int pivotIndex = partition(list, low, high, comparator);
@@ -55,14 +49,7 @@ public class TaskManager<T extends Task> {
         }
     }
 
-    /**
-     * Partition method for quicksort.
-     * @param list The list to partition.
-     * @param low The starting index.
-     * @param high The ending index.
-     * @param comparator A comparator for comparing two elements.
-     * @return The partition index.
-     */
+    // Partition method for quicksort
     private int partition(List<T> list, int low, int high, Comparator<T> comparator) {
         T pivot = list.get(high); // Choose the last element as pivot
         int i = low - 1; // Index of the smaller element
@@ -122,3 +109,4 @@ public class TaskManager<T extends Task> {
         }
     }
 }
+

@@ -8,11 +8,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.Region;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainApp extends Application {
     private final TaskManager<Task> taskManager = new TaskManager<>();
@@ -48,12 +50,24 @@ public class MainApp extends Application {
         sortComboBox.setValue("Sort by Priority"); // Default value
         sortComboBox.setOnAction(_ -> handleSort(sortComboBox.getValue()));
 
+        // Create search button with '?' symbol
+        Button searchButton = new Button("⌕");
+        searchButton.setTooltip(new Tooltip("Click to search tasks by name"));
+
+        // Create clear search button
+        Button clearSearchButton = new Button("X");
+        clearSearchButton.setTooltip(new Tooltip("Click to clear the search filter"));
+
+        // Event Handlers
+        searchButton.setOnAction(e -> showSearchPrompt());
+        clearSearchButton.setOnAction(e -> clearSearch());
+
         // Group related buttons in HBoxes
         HBox taskButtons = new HBox(10, addTaskButton, removeTaskButton);
         HBox undoRedoButtons = new HBox(10, undoButton, redoButton);
         HBox saveLoadButtons = new HBox(10, saveButton, loadButton);
 
-        // Event Handlers
+        // Event Handlers for other buttons
         addTaskButton.setOnAction(_ -> addTask());
         removeTaskButton.setOnAction(_ -> removeSelectedTask());
         undoButton.setOnAction(_ -> undoLastTask());
@@ -78,15 +92,6 @@ public class MainApp extends Application {
         // Initialize the priority spinner with a range and default value
         prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, 1));
 
-        // Allow typing and ensure the input is a valid integer
-        prioritySpinner.setEditable(true); // Enable typing
-        prioritySpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
-            if (change.getControlNewText().matches("[0-9]*")) {  // Allow only digits
-                return change;
-            }
-            return null; // Reject non-digit input
-        }));
-
         // Layout with padding and spacing
         VBox layout = new VBox(10,
                 titleLabel, titleField,
@@ -97,22 +102,16 @@ public class MainApp extends Application {
                 new HBox(10, undoRedoButtons),  // Undo/Redo buttons
                 new HBox(10, saveLoadButtons),  // Save/Load buttons
                 sortComboBox,  // Only the ComboBox for sorting
-                new Label("Tasks:"),
+                createTaskSearchHBox(searchButton, clearSearchButton),  // "Tasks:" label and buttons
                 taskListView
         );
 
-        // Add 20px padding between the due date box and the add/remove buttons
-        VBox.setMargin(dueDatePicker, new Insets(0, 0, 20, 0));
-        VBox.setMargin(taskButtons, new Insets(0, 0, 20, 0));
 
-        // Add space between the sort combo box and the tasks label
-        VBox.setMargin(sortComboBox, new Insets(0, 0, 20, 0));
-
-        // Adding Padding (space) to the layout
+        // Add Padding (space) to the layout
         layout.setPadding(new Insets(10, 20, 10, 20));
 
         // Set scene with adjusted height
-        Scene scene = new Scene(layout, 400, 700); //
+        Scene scene = new Scene(layout, 400, 700);
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -120,7 +119,7 @@ public class MainApp extends Application {
         updateTaskList();
     }
 
-    // Method to handle sorting tasks
+    // Method to handle sorting tasks by priority and due date
     private void handleSort(String sortOption) {
         if ("Sort by Priority".equals(sortOption)) {
             taskManager.sortTasksByPriority();
@@ -130,7 +129,38 @@ public class MainApp extends Application {
         updateTaskList();
     }
 
-// Method to add a new task
+    // Method to show a prompt when clicking the "?" button
+    private void showSearchPrompt() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Search Tasks by Name");
+        dialog.setHeaderText("Enter a task name to search for:");
+        dialog.setContentText("Task Name:");
+
+        dialog.showAndWait().ifPresent(input -> {
+            if (input != null && !input.isEmpty()) {
+                filterTasksByName(input);
+            }
+        });
+    }
+
+    // Method to filter and sort tasks based on the name input
+    private void filterTasksByName(String searchTerm) {
+        List<Task> filteredTasks = taskManager.getTasks().stream()
+                .filter(task -> task.getTitle().toLowerCase().contains(searchTerm.toLowerCase())) // Case-insensitive search
+                .sorted((task1, task2) -> task1.getTitle().compareToIgnoreCase(task2.getTitle())) // Sort alphabetically by task name
+                .collect(Collectors.toList());
+
+        // Update the task list view with the filtered and sorted tasks
+        ObservableList<Task> tasks = FXCollections.observableArrayList(filteredTasks);
+        taskListView.setItems(tasks);
+    }
+
+    // Method to clear the search filter and reset the task list to original
+    private void clearSearch() {
+        updateTaskList(); // Reset to show all tasks
+    }
+
+    // Method to add a new task
     private void addTask() {
         String title = titleField.getText();
         String description = descriptionField.getText();
@@ -152,7 +182,6 @@ public class MainApp extends Application {
         // Reset due date to today's date after adding the task
         dueDatePicker.setValue(LocalDate.now());
     }
-
 
     // Method to remove the selected task
     private void removeSelectedTask() {
@@ -212,8 +241,20 @@ public class MainApp extends Application {
         alert.showAndWait();
     }
 
+    // Method to create the HBox with right-aligned buttons
+    private HBox createTaskSearchHBox(Button searchButton, Button clearSearchButton) {
+        // Create a Region to push the buttons to the far right
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        HBox taskSearchHBox = new HBox(10, new Label("Tasks:"), spacer, searchButton, clearSearchButton);
+
+        return taskSearchHBox;
+    }
+
+
+
     public static void main(String[] args) {
         launch(args);
     }
 }
-
