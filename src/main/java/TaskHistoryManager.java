@@ -5,7 +5,7 @@ public class TaskHistoryManager<T> {
     private final Stack<HistoryRecord<T>> redoStack = new Stack<>();
 
     // Create HistoryRecord class
-        public record HistoryRecord<T>(T task, String operation) {
+    public record HistoryRecord<T>(T task, String operation) {
     }
 
     public void addToHistory(T task, String operation) {
