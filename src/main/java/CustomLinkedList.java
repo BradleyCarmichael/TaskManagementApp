@@ -39,11 +39,6 @@ public class CustomLinkedList<T> {
         return size;
     }
 
-    // Check if the list is empty
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
     // Get the element at a specific index
     public T get(int index) {
         if (index < 0 || index >= size) {

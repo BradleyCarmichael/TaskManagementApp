@@ -47,7 +47,7 @@ public class MainApp extends Application {
         bulkDeleteComboBox.setItems(bulkDeleteOptionsList);
         bulkDeleteComboBox.setValue("Bulk Delete");
 
-        bulkDeleteComboBox.setOnAction(e -> handleBulkDeleteOption(bulkDeleteComboBox.getValue()));
+        bulkDeleteComboBox.setOnAction(_ -> handleBulkDeleteOption(bulkDeleteComboBox.getValue()));
 
         // Create ComboBox for sorting options
         ComboBox<String> sortComboBox = new ComboBox<>();
@@ -73,8 +73,8 @@ public class MainApp extends Application {
         redoButton.setOnAction(_ -> redoLastTask());
         saveButton.setOnAction(_ -> saveTasksToFile());
         loadButton.setOnAction(_ -> loadTasksFromFile());
-        searchButton.setOnAction(e -> showSearchPrompt());
-        clearSearchButton.setOnAction(e -> clearSearch());
+        searchButton.setOnAction(_ -> showSearchPrompt());
+        clearSearchButton.setOnAction(_ -> clearSearch());
 
         // Set custom date format for the DatePicker
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -95,7 +95,7 @@ public class MainApp extends Application {
         // Layout with padding and spacing
         HBox taskButtons = new HBox(10, addTaskButton, removeTaskButton, bulkDeleteComboBox);
         taskButtons.setSpacing(10);
-        taskButtons.setHgrow(bulkDeleteComboBox, Priority.ALWAYS);  // Align bulk delete combo box to the right
+        HBox.setHgrow(bulkDeleteComboBox, Priority.ALWAYS);  // Align bulk delete combo box to the right
 
         VBox layout = new VBox(10,
                 titleLabel, titleField,
@@ -134,7 +134,7 @@ public class MainApp extends Application {
         dialog.setContentText("Task Name:");
 
         dialog.showAndWait().ifPresent(input -> {
-            if (input != null && !input.isEmpty()) {
+            if (!input.isEmpty()) {
                 filterTasksByName(input);
             }
         });
@@ -207,7 +207,7 @@ public class MainApp extends Application {
             // Find and remove tasks that match the name criteria
             List<Task> tasksToRemove = taskManager.getTasks().stream()
                     .filter(task -> bst.contains(task.getTitle()))  // Check if task is in BST
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Remove the tasks from taskManager
             tasksToRemove.forEach(taskManager::removeTask);
@@ -244,7 +244,7 @@ public class MainApp extends Application {
                     // Find and remove tasks that match the priority range
                     List<Task> tasksToRemove = taskManager.getTasks().stream()
                             .filter(task -> bst.contains(String.valueOf(task.getPriority())))  // Check priority in BST
-                            .collect(Collectors.toList());
+                            .toList();
 
                     // Remove the tasks from taskManager
                     tasksToRemove.forEach(taskManager::removeTask);
@@ -308,9 +308,7 @@ public class MainApp extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-        HBox taskSearchHBox = new HBox(10, new Label("Tasks:"), spacer, searchButton, clearSearchButton);
-
-        return taskSearchHBox;
+        return new HBox(10, new Label("Tasks:"), spacer, searchButton, clearSearchButton);
     }
 
     public static void main(String[] args) {

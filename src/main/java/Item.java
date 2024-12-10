@@ -6,12 +6,10 @@ public class Item implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String title;
-    private final String description;
 
     // Constructor to initialize title and description
-    public Item(String title, String description) {
+    public Item(String title) {
         this.title = title;
-        this.description = description;
     }
 
     // Get the title of the item
@@ -24,4 +22,5 @@ public class Item implements Serializable {
     public String toString() {
         return title;
     }
+
 }

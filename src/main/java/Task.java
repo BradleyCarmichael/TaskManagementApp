@@ -2,8 +2,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Task extends Item implements Serializable {
     @Serial
@@ -11,13 +9,11 @@ public class Task extends Item implements Serializable {
 
     private final int priority;
     private final LocalDate dueDate;
-    private final List<Task> dependencies;
 
     public Task(String title, String description, int priority, LocalDate dueDate) {
-        super(title, description);
+        super(title);
         this.priority = priority;
         this.dueDate = dueDate;
-        this.dependencies = new ArrayList<>();
     }
 
     public int getPriority() {
@@ -28,18 +24,10 @@ public class Task extends Item implements Serializable {
         return dueDate;
     }
 
-    public List<Task> getDependencies() {
-        return dependencies;
-    }
-
-    public void addDependency(Task task) {
-        dependencies.add(task);
-    }
-
     @Override
     public String toString() {
 
-        // Format the due date as MM/dd/yyyy to make it easier to rread
+        // Format the due date as MM/dd/yyyy to make it easier to read
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         String formattedDate = dueDate.format(formatter);
 

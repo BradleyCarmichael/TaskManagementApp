@@ -6,16 +6,19 @@ import java.util.List;
 public class TaskManager<T extends Task> {
     private CustomLinkedList<T> tasks;
     private final TaskHistoryManager<T> historyManager;
+    private final HashTable<String, T> taskTable;  // Custom HashTable to store tasks by title
 
     // Constructor
     public TaskManager() {
         tasks = new CustomLinkedList<>(); // Initialize CustomLinkedList
         historyManager = new TaskHistoryManager<>();
+        taskTable = new HashTable<>();  // Initialize the HashTable
     }
 
     // Add a task
     public void addTask(T task) {
         tasks.add(task);
+        taskTable.put(task.getTitle(), task);  // Store the task in the HashTable
         historyManager.addToHistory(task, "Add");
     }
 
@@ -24,13 +27,14 @@ public class TaskManager<T extends Task> {
         int index = findTaskIndex(task);
         if (index != -1) {
             tasks.remove(index);
+            taskTable.remove(task.getTitle());  // Remove the task from the HashTable
             historyManager.addToHistory(task, "Remove");
         }
     }
 
     // Get all tasks
     public List<T> getTasks() {
-        List<T> result = new ArrayList<>(); // Create a temporary list to return all tasks
+        List<T> result = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
             result.add(tasks.get(i));
         }
@@ -40,24 +44,19 @@ public class TaskManager<T extends Task> {
     // Sort tasks by priority using quicksort
     public void sortTasksByPriority() {
         List<T> taskList = getTasks(); // Copy tasks to a temporary list
-        quicksort(taskList, 0, taskList.size() - 1, (a, b) -> Integer.compare(a.getPriority(), b.getPriority()));
+        quicksort(taskList, 0, taskList.size() - 1, Comparator.comparingInt(Task::getPriority));
         reloadTasksFromList(taskList); // Reload sorted tasks back into CustomLinkedList
     }
 
     // Sort tasks by due date using quicksort
     public void sortTasksByDueDate() {
         List<T> taskList = getTasks(); // Copy tasks to a temporary list
-        quicksort(taskList, 0, taskList.size() - 1, (a, b) -> a.getDueDate().compareTo(b.getDueDate()));
+        quicksort(taskList, 0, taskList.size() - 1, Comparator.comparing(Task::getDueDate));
         reloadTasksFromList(taskList); // Reload sorted tasks back into CustomLinkedList
     }
 
     // Quicksort implementation
     private void quicksort(List<T> list, int low, int high, Comparator<T> comparator) {
-
-        // Time complexity: O(n log n) on average and O(n^2) in the worst case
-        // The quicksort algorithm partitions the list and recursively sorts the left and right partitions.
-        // It is good for large datasets, but can degrade in the worst-case if the pivot is poorly chosen.
-
         if (low < high) {
             int pivotIndex = partition(list, low, high, comparator);
             quicksort(list, low, pivotIndex - 1, comparator);  // Recursively sort the left half
@@ -67,11 +66,6 @@ public class TaskManager<T extends Task> {
 
     // Partition method for quicksort
     private int partition(List<T> list, int low, int high, Comparator<T> comparator) {
-
-        // Time complexity: O(n) for each partitioning step
-        // This method selects a pivot and rearranges elements so that all elements less than the pivot
-        // are on the left, and all elements greater than the pivot are on the right.
-
         T pivot = list.get(high); // Pivot element
         int i = low - 1;
 
@@ -107,6 +101,7 @@ public class TaskManager<T extends Task> {
         tasks = new CustomLinkedList<>(); // Reinitialize the tasks list
         for (T task : taskList) {
             tasks.add(task); // Add each task from the sorted list to the CustomLinkedList
+            taskTable.put(task.getTitle(), task); // Ensure the HashTable is updated
         }
     }
 
@@ -121,7 +116,7 @@ public class TaskManager<T extends Task> {
     public void loadTasksFromFile(String filename) throws IOException, ClassNotFoundException {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
             List<T> loadedTasks = (List<T>) in.readObject(); // Deserialize tasks from file
-            reloadTasksFromList(loadedTasks); // Reload the tasks into the CustomLinkedList
+            reloadTasksFromList(loadedTasks); // Reload the tasks into the CustomLinkedList and HashTable
         }
     }
 
@@ -147,5 +142,10 @@ public class TaskManager<T extends Task> {
                 removeTask(lastUndone.task()); // Redo the remove operation by removing the task again
             }
         }
+    }
+
+    // Get task by title from the HashTable
+    public T getTaskByTitle(String title) {
+        return taskTable.get(title); // Retrieve a task by its title
     }
 }
