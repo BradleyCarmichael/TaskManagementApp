@@ -95,7 +95,7 @@ public class MainApp extends Application {
         // Layout with padding and spacing
         HBox taskButtons = new HBox(10, addTaskButton, removeTaskButton, bulkDeleteComboBox);
         taskButtons.setSpacing(10);
-        HBox.setHgrow(bulkDeleteComboBox, Priority.ALWAYS);  // Align bulk delete combo box to the right
+        HBox.setHgrow(bulkDeleteComboBox, Priority.ALWAYS);  // Aligns the bulk delete combo box to the right
 
         VBox layout = new VBox(10,
                 titleLabel, titleField,
