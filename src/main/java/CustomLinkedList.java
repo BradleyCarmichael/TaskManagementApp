@@ -10,7 +10,7 @@ public class CustomLinkedList<T> {
         // Constructor to initialize the node with data
         Node(T data) {
             this.data = data;
-            this.next = null; // By default, next is null
+            this.next = null;
         }
     }
 

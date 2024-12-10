@@ -11,7 +11,7 @@ public class TaskHistoryManager<T> {
     public void addToHistory(T task, String operation) {
         HistoryRecord<T> record = new HistoryRecord<>(task, operation);
         undoStack.push(record);
-        redoStack.clear(); // Clear redo stack when new action is added
+        redoStack.clear();
     }
 
     public HistoryRecord<T> undo() {

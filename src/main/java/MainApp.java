@@ -4,11 +4,9 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import javafx.scene.layout.Region;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -41,13 +39,23 @@ public class MainApp extends Application {
         Button saveButton = new Button("Save");
         Button loadButton = new Button("Load");
 
+        // Create ComboBox for bulk delete options
+        ComboBox<String> bulkDeleteComboBox = new ComboBox<>();
+        ObservableList<String> bulkDeleteOptionsList = FXCollections.observableArrayList(
+                "Delete by Name", "Delete by Priority"
+        );
+        bulkDeleteComboBox.setItems(bulkDeleteOptionsList);
+        bulkDeleteComboBox.setValue("Bulk Delete");
+
+        bulkDeleteComboBox.setOnAction(e -> handleBulkDeleteOption(bulkDeleteComboBox.getValue()));
+
         // Create ComboBox for sorting options
         ComboBox<String> sortComboBox = new ComboBox<>();
         ObservableList<String> sortOptions = FXCollections.observableArrayList(
                 "Sort by Priority", "Sort by Due Date"
         );
         sortComboBox.setItems(sortOptions);
-        sortComboBox.setValue("Sort by Priority"); // Default value
+        sortComboBox.setValue("Sort by Priority");
         sortComboBox.setOnAction(_ -> handleSort(sortComboBox.getValue()));
 
         // Create search button with '?' symbol
@@ -59,21 +67,14 @@ public class MainApp extends Application {
         clearSearchButton.setTooltip(new Tooltip("Click to clear the search filter"));
 
         // Event Handlers
-        searchButton.setOnAction(e -> showSearchPrompt());
-        clearSearchButton.setOnAction(e -> clearSearch());
-
-        // Group related buttons in HBoxes
-        HBox taskButtons = new HBox(10, addTaskButton, removeTaskButton);
-        HBox undoRedoButtons = new HBox(10, undoButton, redoButton);
-        HBox saveLoadButtons = new HBox(10, saveButton, loadButton);
-
-        // Event Handlers for other buttons
         addTaskButton.setOnAction(_ -> addTask());
         removeTaskButton.setOnAction(_ -> removeSelectedTask());
         undoButton.setOnAction(_ -> undoLastTask());
         redoButton.setOnAction(_ -> redoLastTask());
         saveButton.setOnAction(_ -> saveTasksToFile());
         loadButton.setOnAction(_ -> loadTasksFromFile());
+        searchButton.setOnAction(e -> showSearchPrompt());
+        clearSearchButton.setOnAction(e -> clearSearch());
 
         // Set custom date format for the DatePicker
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -89,37 +90,34 @@ public class MainApp extends Application {
             }
         });
 
-        // Initialize the priority spinner with a range and default value
         prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, 1));
 
         // Layout with padding and spacing
+        HBox taskButtons = new HBox(10, addTaskButton, removeTaskButton, bulkDeleteComboBox);
+        taskButtons.setSpacing(10);
+        taskButtons.setHgrow(bulkDeleteComboBox, Priority.ALWAYS);  // Align bulk delete combo box to the right
+
         VBox layout = new VBox(10,
                 titleLabel, titleField,
                 descriptionLabel, descriptionField,
                 priorityLabel, prioritySpinner,
                 dueDateLabel, dueDatePicker,
-                new HBox(10, taskButtons),  // Task-related buttons (Add/Remove)
-                new HBox(10, undoRedoButtons),  // Undo/Redo buttons
-                new HBox(10, saveLoadButtons),  // Save/Load buttons
-                sortComboBox,  // Only the ComboBox for sorting
-                createTaskSearchHBox(searchButton, clearSearchButton),  // "Tasks:" label and buttons
+                taskButtons,  // Updated task-related buttons (Add/Remove/Bulk Delete)
+                new HBox(10, undoButton, redoButton),
+                new HBox(10, saveButton, loadButton),
+                sortComboBox,
+                createTaskSearchHBox(searchButton, clearSearchButton),
                 taskListView
         );
-
-
-        // Add Padding (space) to the layout
         layout.setPadding(new Insets(10, 20, 10, 20));
 
-        // Set scene with adjusted height
         Scene scene = new Scene(layout, 400, 700);
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Initialize Task List
         updateTaskList();
     }
 
-    // Method to handle sorting tasks by priority and due date
     private void handleSort(String sortOption) {
         if ("Sort by Priority".equals(sortOption)) {
             taskManager.sortTasksByPriority();
@@ -129,7 +127,6 @@ public class MainApp extends Application {
         updateTaskList();
     }
 
-    // Method to show a prompt when clicking the "?" button
     private void showSearchPrompt() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Search Tasks by Name");
@@ -143,7 +140,6 @@ public class MainApp extends Application {
         });
     }
 
-    // Method to filter and sort tasks based on the name input
     private void filterTasksByName(String searchTerm) {
         List<Task> filteredTasks = taskManager.getTasks().stream()
                 .filter(task -> task.getTitle().toLowerCase().contains(searchTerm.toLowerCase())) // Case-insensitive search
@@ -155,35 +151,26 @@ public class MainApp extends Application {
         taskListView.setItems(tasks);
     }
 
-    // Method to clear the search filter and reset the task list to original
     private void clearSearch() {
-        updateTaskList(); // Reset to show all tasks
+        updateTaskList();
     }
 
-    // Method to add a new task
     private void addTask() {
         String title = titleField.getText();
         String description = descriptionField.getText();
         int priority = prioritySpinner.getValue();
         LocalDate dueDate = dueDatePicker.getValue();
 
-        // Create a new task with the title, description, priority, and due date
         Task newTask = new Task(title, description, priority, dueDate);
         taskManager.addTask(newTask);
         updateTaskList();
 
-        // Clear input fields after adding a task
         titleField.clear();
         descriptionField.clear();
-
-        // Reset the priority spinner value back to 1
         prioritySpinner.getValueFactory().setValue(1);
-
-        // Reset due date to today's date after adding the task
         dueDatePicker.setValue(LocalDate.now());
     }
 
-    // Method to remove the selected task
     private void removeSelectedTask() {
         Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
         if (selectedTask != null) {
@@ -194,25 +181,99 @@ public class MainApp extends Application {
         }
     }
 
-    // Method to undo the last task operation
     private void undoLastTask() {
         taskManager.undo();
         updateTaskList();
     }
 
-    // Method to redo the last undone task operation
     private void redoLastTask() {
         taskManager.redo();
         updateTaskList();
     }
 
-    // Method to update the task list in the UI
-    private void updateTaskList() {
-        ObservableList<Task> tasks = FXCollections.observableArrayList(taskManager.getTasks());
-        taskListView.setItems(tasks);
+    private void deleteTasksByName() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Delete by Name");
+        dialog.setHeaderText("Delete Tasks by Name");
+        dialog.setContentText("Enter the name or part of the name:");
+        dialog.showAndWait().ifPresent(name -> {
+            BST bst = new BST();  // Create the BST for bulk deletion
+
+            // Insert tasks to be deleted into the BST
+            taskManager.getTasks().stream()
+                    .filter(task -> task.getTitle().contains(name))
+                    .forEach(task -> bst.insert(task.getTitle()));
+
+            // Find and remove tasks that match the name criteria
+            List<Task> tasksToRemove = taskManager.getTasks().stream()
+                    .filter(task -> bst.contains(task.getTitle()))  // Check if task is in BST
+                    .collect(Collectors.toList());
+
+            // Remove the tasks from taskManager
+            tasksToRemove.forEach(taskManager::removeTask);
+            updateTaskList();
+            showAlert(Alert.AlertType.INFORMATION, "Tasks Deleted", tasksToRemove.size() + " tasks deleted.");
+        });
     }
 
-    // Method to save tasks to a file
+    private void deleteTasksByPriority() {
+        TextInputDialog startDialog = new TextInputDialog();
+        startDialog.setTitle("Delete by Priority");
+        startDialog.setHeaderText("Delete Tasks by Priority Range");
+        startDialog.setContentText("Enter the starting priority:");
+        startDialog.showAndWait().ifPresent(startPriorityStr -> {
+            TextInputDialog endDialog = new TextInputDialog();
+            endDialog.setTitle("Delete by Priority");
+            endDialog.setHeaderText("Delete Tasks by Priority Range");
+            endDialog.setContentText("Enter the ending priority:");
+            endDialog.showAndWait().ifPresent(endPriorityStr -> {
+                try {
+                    int startPriority = Integer.parseInt(startPriorityStr);
+                    int endPriority = Integer.parseInt(endPriorityStr);
+                    if (startPriority > endPriority) {
+                        showAlert(Alert.AlertType.ERROR, "Invalid Range", "Start priority must be less than or equal to end priority.");
+                        return;
+                    }
+
+                    // Create a BST for task priorities
+                    BST bst = new BST();
+                    taskManager.getTasks().stream()
+                            .filter(task -> task.getPriority() >= startPriority && task.getPriority() <= endPriority)
+                            .forEach(task -> bst.insert(String.valueOf(task.getPriority())));  // Insert priority as string
+
+                    // Find and remove tasks that match the priority range
+                    List<Task> tasksToRemove = taskManager.getTasks().stream()
+                            .filter(task -> bst.contains(String.valueOf(task.getPriority())))  // Check priority in BST
+                            .collect(Collectors.toList());
+
+                    // Remove the tasks from taskManager
+                    tasksToRemove.forEach(taskManager::removeTask);
+                    updateTaskList();
+                    showAlert(Alert.AlertType.INFORMATION, "Tasks Deleted", tasksToRemove.size() + " tasks deleted.");
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Invalid Input", "Priority values must be numbers.");
+                }
+            });
+        });
+    }
+
+    private void handleBulkDeleteOption(String selectedOption) {
+        switch (selectedOption) {
+            case "Delete by Name":
+                deleteTasksByName();
+                break;
+            case "Delete by Priority":
+                deleteTasksByPriority();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void updateTaskList() {
+        taskListView.setItems(FXCollections.observableArrayList(taskManager.getTasks()));
+    }
+
     private void saveTasksToFile() {
         try {
             taskManager.saveTasksToFile("tasks.dat");
@@ -222,7 +283,6 @@ public class MainApp extends Application {
         }
     }
 
-    // Method to load tasks from a file
     private void loadTasksFromFile() {
         try {
             taskManager.loadTasksFromFile("tasks.dat");
@@ -233,7 +293,6 @@ public class MainApp extends Application {
         }
     }
 
-    // Method to show alert dialogs
     private void showAlert(Alert.AlertType alertType, String title, String content) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
@@ -243,7 +302,9 @@ public class MainApp extends Application {
 
     // Method to create the HBox with right-aligned buttons
     private HBox createTaskSearchHBox(Button searchButton, Button clearSearchButton) {
+
         // Create a Region to push the buttons to the far right
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
@@ -251,8 +312,6 @@ public class MainApp extends Application {
 
         return taskSearchHBox;
     }
-
-
 
     public static void main(String[] args) {
         launch(args);
