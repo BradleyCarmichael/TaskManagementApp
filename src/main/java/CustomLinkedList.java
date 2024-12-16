@@ -2,24 +2,25 @@ public class CustomLinkedList<T> {
     private Node<T> head;
     private int size;
 
-    // Inner Node class defined inside CustomLinkedList
+    // Each node holds data and points to the next node
     private static class Node<T> {
         T data;
         Node<T> next;
 
-        // Constructor to initialize the node with data
+        // Creates a new node with the given data
         Node(T data) {
             this.data = data;
             this.next = null;
         }
     }
 
+    // Creates an empty list
     public CustomLinkedList() {
         head = null;
         size = 0;
     }
 
-    // Add a new element at the end of the list
+    // Adds a new item to the end of the list
     public void add(T data) {
         Node<T> newNode = new Node<>(data);
         if (head == null) {
@@ -34,12 +35,12 @@ public class CustomLinkedList<T> {
         size++;
     }
 
-    // Get the size of the list
+    // Returns how many items are in the list
     public int size() {
         return size;
     }
 
-    // Get the element at a specific index
+    // Gets an item at a specific position
     public T get(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index out of bounds");
@@ -51,7 +52,7 @@ public class CustomLinkedList<T> {
         return current.data;
     }
 
-    // Remove an element at a specific index
+    // Removes an item at a specific position
     public void remove(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index out of bounds");

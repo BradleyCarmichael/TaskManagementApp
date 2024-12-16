@@ -1,9 +1,14 @@
 import java.util.LinkedList;
 
+// A custom hash table that stores key-value pairs
+// Uses chaining (linked lists) to handle collisions
 public class HashTable<K, V> {
-    private static final int SIZE = 100; // Number of buckets
+    // Number of buckets in the hash table
+    private static final int SIZE = 100;
     private LinkedList<Entry<K, V>>[] table;
 
+    // Creates a new empty hash table
+    @SuppressWarnings("unchecked")
     public HashTable() {
         table = new LinkedList[SIZE];
         for (int i = 0; i < SIZE; i++) {
@@ -11,7 +16,7 @@ public class HashTable<K, V> {
         }
     }
 
-    // Key-value entry
+    // Helper class to store key-value pairs
     static class Entry<K, V> {
         K key;
         V value;
@@ -22,24 +27,24 @@ public class HashTable<K, V> {
         }
     }
 
-    // Hash function
+    // Calculates which bucket to use for a given key
     private int hash(K key) {
         return Math.abs(key.hashCode()) % SIZE;
     }
 
-    // Add key-value pair to the table
+    // Adds or updates a key-value pair in the table
     public void put(K key, V value) {
         int index = hash(key);
         for (Entry<K, V> entry : table[index]) {
             if (entry.key.equals(key)) {
-                entry.value = value;  // Replace the value if key already exists
+                entry.value = value;  // Update value if key exists
                 return;
             }
         }
         table[index].add(new Entry<>(key, value));
     }
 
-    // Get value by key
+    // Gets a value using its key
     public V get(K key) {
         int index = hash(key);
         for (Entry<K, V> entry : table[index]) {
@@ -47,16 +52,16 @@ public class HashTable<K, V> {
                 return entry.value;
             }
         }
-        return null; // Return null if the key doesn't exist
+        return null; // Return null if key not found
     }
 
-    // Remove key-value pair by key
+    // Removes a key-value pair from the table
     public void remove(K key) {
         int index = hash(key);
         table[index].removeIf(entry -> entry.key.equals(key));
     }
 
-    // Check if a key exists in the table
+    // Checks if a key exists in the table
     public boolean containsKey(K key) {
         return get(key) != null;
     }

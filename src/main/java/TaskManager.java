@@ -3,36 +3,41 @@ import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;
 
+// Manages all tasks and their operations
+// Handles adding, removing, sorting, and storing tasks
 public class TaskManager<T extends Task> {
     private CustomLinkedList<T> tasks;
     private final TaskHistoryManager<T> historyManager;
-    private final HashTable<String, T> taskTable;  // Custom HashTable to store tasks by title
+    private final HashTable<String, T> taskTable;  // Stores tasks by title for quick lookup
+    private final TaskCache<String, T> taskCache = new TaskCache<>(50); // Caches recent tasks
 
-    // Constructor
+    // Sets up a new task manager with empty lists and storage
     public TaskManager() {
-        tasks = new CustomLinkedList<>(); // Initialize CustomLinkedList
+        tasks = new CustomLinkedList<>();
         historyManager = new TaskHistoryManager<>();
-        taskTable = new HashTable<>();  // Initialize the HashTable
+        taskTable = new HashTable<>();
     }
 
-    // Add a task
+    // Adds a new task and updates all storage locations
     public void addTask(T task) {
         tasks.add(task);
-        taskTable.put(task.getTitle(), task);  // Store the task in the HashTable
+        taskTable.put(task.getTitle(), task);
+        taskCache.put(task.getTitle(), task);
         historyManager.addToHistory(task, "Add");
     }
 
-    // Remove a task
+    // Removes a task from all storage locations
     public void removeTask(T task) {
         int index = findTaskIndex(task);
         if (index != -1) {
             tasks.remove(index);
-            taskTable.remove(task.getTitle());  // Remove the task from the HashTable
+            taskTable.remove(task.getTitle());
+            taskCache.clear();
             historyManager.addToHistory(task, "Remove");
         }
     }
 
-    // Get all tasks
+    // Returns a list of all tasks
     public List<T> getTasks() {
         List<T> result = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
@@ -41,35 +46,34 @@ public class TaskManager<T extends Task> {
         return result;
     }
 
-    // Sort tasks by priority using quicksort
+    // Sorts tasks by priority using quicksort
     public void sortTasksByPriority() {
-        List<T> taskList = getTasks(); // Copy tasks to a temporary list
+        List<T> taskList = getTasks();
         quicksort(taskList, 0, taskList.size() - 1, Comparator.comparingInt(Task::getPriority));
-        reloadTasksFromList(taskList); // Reload sorted tasks back into CustomLinkedList
+        reloadTasksFromList(taskList);
     }
 
-    // Sort tasks by due date using quicksort
+    // Sorts tasks by due date using quicksort
     public void sortTasksByDueDate() {
-        List<T> taskList = getTasks(); // Copy tasks to a temporary list
+        List<T> taskList = getTasks();
         quicksort(taskList, 0, taskList.size() - 1, Comparator.comparing(Task::getDueDate));
-        reloadTasksFromList(taskList); // Reload sorted tasks back into CustomLinkedList
+        reloadTasksFromList(taskList);
     }
 
-    // Quicksort implementation
+    // Quicksort implementation for sorting tasks
     private void quicksort(List<T> list, int low, int high, Comparator<T> comparator) {
         if (low < high) {
             int pivotIndex = partition(list, low, high, comparator);
-            quicksort(list, low, pivotIndex - 1, comparator);  // Recursively sort the left half
-            quicksort(list, pivotIndex + 1, high, comparator); // Recursively sort the right half
+            quicksort(list, low, pivotIndex - 1, comparator);
+            quicksort(list, pivotIndex + 1, high, comparator);
         }
     }
 
-    // Partition method for quicksort
+    // Helper method for quicksort
     private int partition(List<T> list, int low, int high, Comparator<T> comparator) {
-        T pivot = list.get(high); // Pivot element
+        T pivot = list.get(high);
         int i = low - 1;
 
-        // Iterate through the list and rearrange elements
         for (int j = low; j < high; j++) {
             if (comparator.compare(list.get(j), pivot) <= 0) {
                 i++;
@@ -80,72 +84,82 @@ public class TaskManager<T extends Task> {
         }
 
         T temp = list.get(i + 1);
-        list.set(i + 1, list.get(high)); // Move the pivot element to its correct position
+        list.set(i + 1, list.get(high));
         list.set(high, temp);
 
-        return i + 1; // Return the index of the pivot
+        return i + 1;
     }
 
-    // Find the index of a task
+    // Finds where a task is in the list
     private int findTaskIndex(T task) {
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).equals(task)) {
                 return i;
             }
         }
-        return -1; // Return -1 if the task is not found
+        return -1;
     }
 
-    // Reload tasks from a sorted list back into CustomLinkedList
+    // Updates storage after sorting or loading tasks
     private void reloadTasksFromList(List<T> taskList) {
-        tasks = new CustomLinkedList<>(); // Reinitialize the tasks list
+        tasks = new CustomLinkedList<>();
         for (T task : taskList) {
-            tasks.add(task); // Add each task from the sorted list to the CustomLinkedList
-            taskTable.put(task.getTitle(), task); // Ensure the HashTable is updated
+            tasks.add(task);
+            taskTable.put(task.getTitle(), task);
         }
     }
 
-    // Save tasks to file
+    // Saves all tasks to a file
     public void saveTasksToFile(String filename) throws IOException {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
-            out.writeObject(getTasks()); // Serialize and save the tasks list
+            out.writeObject(getTasks());
         }
     }
 
-    // Load tasks from file
+    // Loads tasks from a file
+    @SuppressWarnings("unchecked")
     public void loadTasksFromFile(String filename) throws IOException, ClassNotFoundException {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
-            List<T> loadedTasks = (List<T>) in.readObject(); // Deserialize tasks from file
-            reloadTasksFromList(loadedTasks); // Reload the tasks into the CustomLinkedList and HashTable
+            List<T> loadedTasks = (List<T>) in.readObject();
+            reloadTasksFromList(loadedTasks);
         }
     }
 
-    // Undo last task action
+    // Undoes the last action (add or remove)
     public void undo() {
         TaskHistoryManager.HistoryRecord<T> lastAction = historyManager.undo();
         if (lastAction != null) {
             if (lastAction.operation().equals("Add")) {
-                removeTask(lastAction.task()); // Undo the add operation by removing the task
+                removeTask(lastAction.task());
             } else if (lastAction.operation().equals("Remove")) {
-                addTask(lastAction.task()); // Undo the remove operation by adding the task back
+                addTask(lastAction.task());
             }
         }
     }
 
-    // Redo last undone task
+    // Redoes the last undone action
     public void redo() {
         TaskHistoryManager.HistoryRecord<T> lastUndone = historyManager.redo();
         if (lastUndone != null) {
             if (lastUndone.operation().equals("Add")) {
-                addTask(lastUndone.task()); // Redo the add operation by adding the task again
+                addTask(lastUndone.task());
             } else if (lastUndone.operation().equals("Remove")) {
-                removeTask(lastUndone.task()); // Redo the remove operation by removing the task again
+                removeTask(lastUndone.task());
             }
         }
     }
 
-    // Get task by title from the HashTable
+    // Gets a task by its title, checking cache first
     public T getTaskByTitle(String title) {
-        return taskTable.get(title); // Retrieve a task by its title
+        T cachedTask = taskCache.get(title);
+        if (cachedTask != null) {
+            return cachedTask;
+        }
+        
+        T task = taskTable.get(title);
+        if (task != null) {
+            taskCache.put(title, task);
+        }
+        return task;
     }
 }
